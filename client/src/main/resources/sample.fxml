@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
+    <MenuBar fx:id="menu">
+        <menus>
+            <Menu mnemonicParsing="false" text="File">
+                <items>
+                </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Edit">
+                <items>
+                    <MenuItem mnemonicParsing="false" onAction="#showSettings" text="Settings" />
+                </items>
+            </Menu>
+        </menus>
+    </MenuBar>
+    <HBox fx:id="authPanel" managed="true">
+        <TextField fx:id="loginField" promptText="login" HBox.hgrow="ALWAYS" />
+        <PasswordField fx:id="passwordField" onAction="#tryToAuth" promptText="password" HBox.hgrow="ALWAYS" />
+        <Button minWidth="50" onAction="#tryToAuth" text="Войти" />
+        <Button minWidth="50" onAction="#showRegWindow" text="Новый" />
+    </HBox>
+
+    <HBox VBox.vgrow="ALWAYS">
+        <TextArea fx:id="textArea" editable="false" />
+        <ListView fx:id="clientList" managed="false" minWidth="100" onMouseClicked="#clickClientList" visible="false" />
+    </HBox>
+
+
+    <HBox fx:id="msgPanel" managed="false" visible="false">
+        <TextField fx:id="textField" onAction="#sendMsg" HBox.hgrow="ALWAYS" />
+        <Button onAction="#sendMsg" text="send" />
+    </HBox>
+</VBox>

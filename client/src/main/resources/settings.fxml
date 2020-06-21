@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="client.SettingsController">
+    <Label text="Изменить nickname:">
+      <VBox.margin>
+         <Insets bottom="10.0" top="10.0" />
+      </VBox.margin></Label>
+    <TextField fx:id="nickField" promptText="nickname">
+      <VBox.margin>
+         <Insets bottom="10.0" top="10.0" />
+      </VBox.margin></TextField>
+
+    <Button onAction="#changeNick" text="Изменить nick" />
+
+</VBox>
