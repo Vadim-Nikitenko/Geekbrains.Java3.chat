@@ -5,6 +5,7 @@ import database.DatabaseConnection;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -25,7 +26,11 @@ public class Server {
         try {
             server = new ServerSocket(PORT);
             System.out.println("Сервер запущен!");
-
+            try {
+                DatabaseConnection.connect();
+            } catch (ClassNotFoundException | SQLException e) {
+                e.printStackTrace();
+            }
             while (true) {
                 socket = server.accept();
                 System.out.println("Клиент подключился ");
@@ -35,6 +40,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            DatabaseConnection.disconnect();
             try {
                 server.close();
             } catch (IOException e) {
