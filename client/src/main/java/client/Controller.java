@@ -54,6 +54,7 @@ public class Controller implements Initializable {
 
     private boolean authenticated;
     private String nick;
+    private String login;
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -118,9 +119,10 @@ public class Controller implements Initializable {
                         if (str.startsWith("/authok ")) {
                             nick = str.split(" ")[1];
                             setAuthenticated(true);
+                            LocalHistory.createLocalHistory(login);
+                            textArea.appendText(LocalHistory.showHistory(login));
                             break;
                         }
-
                         textArea.appendText(str + "\n");
                     }
 
@@ -139,6 +141,7 @@ public class Controller implements Initializable {
 
                         } else {
                             textArea.appendText(str + "\n");
+                            LocalHistory.saveHistory(login, str);
                         }
                     }
                 } catch (RuntimeException e) {
@@ -148,6 +151,7 @@ public class Controller implements Initializable {
                 } finally {
                     System.out.println("мы отключились");
                     setAuthenticated(false);
+                    this.login = null;
                     try {
                         socket.close();
                     } catch (IOException e) {
@@ -178,6 +182,7 @@ public class Controller implements Initializable {
         try {
             out.writeUTF("/auth " + loginField.getText().trim() + " " + passwordField.getText().trim());
             passwordField.clear();
+            this.login = loginField.getText().trim();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -224,7 +229,6 @@ public class Controller implements Initializable {
 
     public void tryRegistration(String login, String password, String nickname) {
         String msg = String.format("/reg %s %s %s", login, password, nickname);
-
         if (socket == null || socket.isClosed()) {
             connect();
         }
