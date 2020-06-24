@@ -41,7 +41,10 @@ public class ClientHandler {
                                 continue;
                             }
 
-                            boolean succeed = DatabaseConnection.createNewUser(token[1], token[2], token[3]);
+                            boolean succeed = server
+                                    .getDbAuthService()
+                                    .registration(token[1], token[2], token[3]);
+
                             if (succeed) {
                                 sendMsg("Регистрация прошла успешно");
                             } else {
