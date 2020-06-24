@@ -15,9 +15,16 @@ public class Server {
     private List<ClientHandler> clients;
     private AuthService authService;
 
+    public DbAuthService getDbAuthService() {
+        return dbAuthService;
+    }
+
+    private DbAuthService dbAuthService;
+
     public Server() {
         clients = new Vector<>();
         authService = new SimpleAuthService();
+        dbAuthService = new DbAuthService();
         ServerSocket server = null;
         Socket socket;
 
