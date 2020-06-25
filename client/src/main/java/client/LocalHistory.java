@@ -22,14 +22,15 @@ public class LocalHistory {
         String tmp;
         try {
             for (int i = 100; i > 0; i--) {
-                if((tmp = scanner.nextLine()) != null) {
+                if ((tmp = scanner.nextLine()) != null) {
                     result += tmp + "\n";
                 }
             }
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             System.out.println("В локальной истории меньше 100 сообщений");
+        } finally {
+            scanner.close();
         }
-        scanner.close();
         return result;
     }
 }
