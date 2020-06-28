@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.*;
 
 public class ClientHandler {
     private Server server;
@@ -18,6 +19,21 @@ public class ClientHandler {
     private String login;
     private String password;
 
+    /* В нашем чате использование ExecutorService не дает никаких преимуществ. Чат запускается локально с ограниченным
+    * количеством пользователей. Какую реализацию ExecutorService использовать тоже большой разницы нет, при любой реализации
+    * чат работает быстро. Для тренировки написал свою реализацию CachedThreadPoll с другим таймаутом: не 60 секунд, а 20.
+    * Если рассматривать не тестовую среду, а боевую, то, конечно, использование CachedThreadPoll неоправдано, так как
+    * нагрузка на сервер, как правило, неравномерна, и при большой нагрузке, может не хватить мощностей для обработки большого
+    * потока пользователей в пиковые часы. Хотя при небольшом количестве клиентов можно использовать и его, особенно, с уменьшенным delay
+    * удаления неиспользуемых потоков. Реальные проекты на проде используют мультисерверные технологии с распределенной нагрузкой,
+    * и,наверняка, делают выбор какую технологию использовать, исходя из нагрузочного тестирования своего отдела QA и рекомендаций
+    * отдела безопасности. В любом случае, вряд ли это будет CachedThreadPoll, скорее это Fixed, значение которого опирается
+    * на мощности текущего сервера в распределенной сети и поток пользователей к данному серверу.
+    */
+    ExecutorService service = new ThreadPoolExecutor(0,Integer.MAX_VALUE,
+                                      20L,TimeUnit.SECONDS,
+                                      new SynchronousQueue<>());
+
     public ClientHandler(Server server, Socket socket) {
         this.server = server;
         this.socket = socket;
@@ -25,10 +41,10 @@ public class ClientHandler {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            new Thread(() -> {
+            service.execute(() -> {
                 try {
                     //Если в течении 5 секунд не будет сообщений по сокету то вызовится исключение
-                    socket.setSoTimeout(3000);
+                    socket.setSoTimeout(5000);
 
                     //цикл аутентификации
                     while (true) {
@@ -118,6 +134,7 @@ public class ClientHandler {
                 catch (IOException e) {
                     e.printStackTrace();
                 } finally {
+                    service.shutdown();
                     server.unsubscribe(this);
                     System.out.println("Клиент отключился");
                     try {
@@ -126,9 +143,7 @@ public class ClientHandler {
                         e.printStackTrace();
                     }
                 }
-            }).start();
-
-
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
