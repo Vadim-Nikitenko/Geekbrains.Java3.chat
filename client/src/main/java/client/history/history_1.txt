@@ -20,3 +20,5 @@ Vadim: sdf
 Vadim: sd
 Vadim: gs
 Vadim: dg
+not found user: 2
+[ Vadim ] private [ 2 ] : привет
