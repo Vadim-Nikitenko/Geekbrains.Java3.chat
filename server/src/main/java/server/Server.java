@@ -10,10 +10,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private List<ClientHandler> clients;
     private AuthService authService;
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    private ExecutorService executorService;
 
     public DbAuthService getDbAuthService() {
         return dbAuthService;
@@ -25,6 +33,7 @@ public class Server {
         clients = new Vector<>();
         authService = new SimpleAuthService();
         dbAuthService = new DbAuthService();
+        executorService = Executors.newCachedThreadPool();
         ServerSocket server = null;
         Socket socket;
 
@@ -47,6 +56,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            executorService.shutdown();
             DatabaseConnection.disconnect();
             try {
                 server.close();

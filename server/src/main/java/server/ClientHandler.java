@@ -30,9 +30,6 @@ public class ClientHandler {
     * отдела безопасности. В любом случае, вряд ли это будет CachedThreadPoll, скорее это Fixed, значение которого опирается
     * на мощности текущего сервера в распределенной сети и поток пользователей к данному серверу.
     */
-    ExecutorService service = new ThreadPoolExecutor(0,Integer.MAX_VALUE,
-                                      20L,TimeUnit.SECONDS,
-                                      new SynchronousQueue<>());
 
     public ClientHandler(Server server, Socket socket) {
         this.server = server;
@@ -41,7 +38,7 @@ public class ClientHandler {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            service.execute(() -> {
+            server.getExecutorService().execute(()->{
                 try {
                     //Если в течении 5 секунд не будет сообщений по сокету то вызовится исключение
                     socket.setSoTimeout(5000);
@@ -134,7 +131,6 @@ public class ClientHandler {
                 catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    service.shutdown();
                     server.unsubscribe(this);
                     System.out.println("Клиент отключился");
                     try {
