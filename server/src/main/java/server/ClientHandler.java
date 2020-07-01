@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.*;
 
 public class ClientHandler {
     private Server server;
@@ -25,10 +26,10 @@ public class ClientHandler {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            new Thread(() -> {
+            server.getExecutorService().execute(()->{
                 try {
                     //Если в течении 5 секунд не будет сообщений по сокету то вызовится исключение
-                    socket.setSoTimeout(3000);
+                    socket.setSoTimeout(5000);
 
                     //цикл аутентификации
                     while (true) {
@@ -126,9 +127,7 @@ public class ClientHandler {
                         e.printStackTrace();
                     }
                 }
-            }).start();
-
-
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
