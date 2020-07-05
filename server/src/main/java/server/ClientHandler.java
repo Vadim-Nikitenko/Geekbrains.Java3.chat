@@ -1,6 +1,5 @@
 package server;
 
-import database.DatabaseConnection;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class ClientHandler {
     private Server server;
@@ -18,6 +18,8 @@ public class ClientHandler {
     private String nick;
     private String login;
     private String password;
+
+    private static final Logger log = Logger.getLogger(ClientHandler.class.getName());
 
     public ClientHandler(Server server, Socket socket) {
         this.server = server;
@@ -48,9 +50,12 @@ public class ClientHandler {
 
                             if (succeed) {
                                 sendMsg("Регистрация прошла успешно");
+                                log.info("Регистрация прошла успешно");
                             } else {
                                 sendMsg("Регистрация  не удалась. \n" +
                                         "Возможно логин уже занят, или данные содержат пробел");
+                                log.info("Регистрация  не удалась. \n" +
+                                        "Возможно логин " + token[1] + " уже занят, или данные содержат пробел");
                             }
                         }
 
@@ -63,22 +68,24 @@ public class ClientHandler {
 
                             login = token[1];
                             password = token[2];
-                            String newNick = DatabaseConnection.getNickname(login);
+                            String newNick = server.getDbAuthService().getNicknameByLoginAndPassword(login, null);
 
 
                             if (newNick != null) {
-                                if (DatabaseConnection.checkAuthorization(login, password) && !server.isLoginAuthorized(login)) {
+                                if (server.getDbAuthService().checkAuthorization(login, password) && !server.isLoginAuthorized(login)) {
                                     sendMsg("/authok " + newNick);
                                     nick = newNick;
                                     server.subscribe(this);
-                                    System.out.println("Клиент: " + nick + " подключился" + socket.getRemoteSocketAddress());
+                                    log.info("Клиент: " + nick + " подключился" + socket.getRemoteSocketAddress());
                                     socket.setSoTimeout(0);
                                     break;
                                 } else {
                                     sendMsg("С этим логином уже прошли аутентификацию");
+                                    log.info("С этим логином " + login + " уже прошли аутентификацию");
                                 }
                             } else {
                                 sendMsg("Неверный логин / пароль");
+                                log.info("Неверный логин / пароль :" + login + " " + password);
                             }
                         }
                     }
@@ -95,7 +102,8 @@ public class ClientHandler {
                             }
                             if (str.startsWith("/changeNick")) {
                                 String[] newNickname = str.split(" ");
-                                DatabaseConnection.changeNick(login, newNickname[1]);
+
+                                server.getDbAuthService().changeNick(login, newNickname[1]);
                                 setNick(newNickname[1]);
                                 server.broadcastClientList();
                             }
@@ -120,7 +128,7 @@ public class ClientHandler {
                     e.printStackTrace();
                 } finally {
                     server.unsubscribe(this);
-                    System.out.println("Клиент отключился");
+                    log.info("Клиент отключился");
                     try {
                         socket.close();
                     } catch (IOException e) {
