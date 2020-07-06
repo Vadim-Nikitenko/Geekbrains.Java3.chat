@@ -12,10 +12,18 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Server {
+    private static final Logger log = Logger.getLogger(Server.class.getName());
+    private static final Logger logger = Logger.getLogger("");
     private List<ClientHandler> clients;
     private AuthService authService;
+    private DbAuthService dbAuthService;
+
 
     public ExecutorService getExecutorService() {
         return executorService;
@@ -27,21 +35,29 @@ public class Server {
         return dbAuthService;
     }
 
-    private DbAuthService dbAuthService;
-
     public Server() {
         clients = new Vector<>();
         authService = new SimpleAuthService();
+        dbAuthService = new DbAuthService();
         dbAuthService = new DbAuthService();
         executorService = Executors.newCachedThreadPool();
         ServerSocket server = null;
         Socket socket;
 
+        Handler fileHandler= null;
+        try {
+            fileHandler = new FileHandler("log_%g.log",10*1024,20,true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fileHandler.setFormatter(new SimpleFormatter());
+        logger.addHandler(fileHandler);
+
         final int PORT = 8189;
 
         try {
             server = new ServerSocket(PORT);
-            System.out.println("Сервер запущен!");
+            log.info("Сервер запущен!");
             try {
                 DatabaseConnection.connect();
             } catch (ClassNotFoundException | SQLException e) {
@@ -49,7 +65,7 @@ public class Server {
             }
             while (true) {
                 socket = server.accept();
-                System.out.println("Клиент подключился ");
+                log.info("Клиент подключился ");
                 new ClientHandler(this, socket);
             }
 
